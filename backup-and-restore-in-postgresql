@@ -1,0 +1,22 @@
+===================================================================================================================================
+Problem: Take a backup of database from prod server having RDS and restore in UAT where database is inside a container named pgsql
+===================================================================================================================================
+Step 1: Take backup from the Prod RDS instance
+Syntax: pg_dump -h <host-name> -U <username> -F c -b -v -f <file-name.dump> <database-name>
+eg: pg_dump -h prod-db.xxxxxxxxx.region.rds.amazonaws.com -U postgres -F c -b -v -f prod_vmps_v1.dump prod_vmps_v1
+
+Step 2: Migrate the dump file created on Prod server to UAT server
+
+Step 3: Create a new database by logging inside the docker on UAT where the dump will be restored
+psql -h pgsql -p 5432 -d prod -U root
+
+Syntax: CREATE DATABASE <database-name>;
+eg: CREATE DATABASE prod2;
+
+Step 4: Copy  the database from the host system to inside docker using docker cp
+docker cp /path/to/file/file-name.dump <container-name>:/path/in/docker/file-name.dump 
+
+Step 5: Restore the database inside the docker container for pgsql in the newly created database using restore command
+Syntax: pg_restore -h <host-name>-U root -d <database-name> -v <file-name.dump>
+eg: pg_restore -h pgsql -U root -d prod2 -v prod_v1.dump
+===================================================================================================================================
